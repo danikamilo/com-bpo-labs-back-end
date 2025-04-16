@@ -1,0 +1,99 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo-ticketmaster
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: bpo
+      MONGO_INITDB_ROOT_PASSWORD: labs.123
+      MONGO_INITDB_DATABASE: db_ticketmaster
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - ticketing-network
+
+  event-service:
+    build:
+      context: ./event-service
+      dockerfile: Dockerfile
+    container_name: event-service
+    ports:
+      - "5052:5052"
+    depends_on:
+      - mongo
+    networks:
+      - ticketing-network
+
+  user-service:
+    build:
+      context: ./user-service
+    ports:
+      - "5059:5059"
+    depends_on:
+      - mongo
+    networks:
+      - ticketing-net
+
+  order-service:
+    build:
+      context: ./order-service
+    ports:
+      - "5056:5056"
+    depends_on:
+      - mongo
+    networks:
+      - ticketing-net
+
+  payment-service:
+    build:
+      context: ./payment-service
+    ports:
+      - "5057:5057"
+    depends_on:
+      - mongo
+    networks:
+      - ticketing-net
+
+  notification-service:
+    build:
+      context: ./notification-service
+    ports:
+      - "5055:5055"
+    depends_on:
+      - mongo
+    networks:
+      - ticketing-net
+
+  inventory-service:
+    build:
+      context: ./inventory-service
+    ports:
+      - "5054:5054"
+    depends_on:
+      - mongo
+    networks:
+      - ticketing-net
+
+  gateway-service:
+    build:
+      context: ./gateway-service
+    ports:
+      - "5053:5053"
+    depends_on:
+      - event-service
+      - user-service
+      - order-service
+      - inventory-service
+      - payment-service
+      - notification-service
+    networks:
+      - ticketing-net
+
+volumes:
+  mongo_data:
+
+networks:
+  ticketing-network:
+    driver: bridge
