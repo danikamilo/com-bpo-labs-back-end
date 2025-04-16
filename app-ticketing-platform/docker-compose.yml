@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   mongo:
     image: mongo:latest
@@ -20,7 +19,7 @@ services:
       dockerfile: Dockerfile
     container_name: event-service
     ports:
-      - "5052:5052"
+      - "5051:5050"
     depends_on:
       - mongo
     networks:
@@ -29,58 +28,65 @@ services:
   user-service:
     build:
       context: ./user-service
+      dockerfile: Dockerfile
     ports:
-      - "5059:5059"
+      - "5059:5050"
     depends_on:
       - mongo
     networks:
-      - ticketing-net
+      - ticketing-network
 
   order-service:
     build:
       context: ./order-service
+      dockerfile: Dockerfile
     ports:
-      - "5056:5056"
+      - "5056:5050"
     depends_on:
       - mongo
     networks:
-      - ticketing-net
+      - ticketing-network
 
   payment-service:
     build:
       context: ./payment-service
+      dockerfile: Dockerfile
     ports:
-      - "5057:5057"
+      - "5057:5050"
     depends_on:
       - mongo
     networks:
-      - ticketing-net
+      - ticketing-network
 
   notification-service:
     build:
       context: ./notification-service
+      dockerfile: Dockerfile
     ports:
-      - "5055:5055"
+      - "5055:5050"
     depends_on:
       - mongo
     networks:
-      - ticketing-net
+      - ticketing-network
 
   inventory-service:
     build:
       context: ./inventory-service
+      dockerfile: Dockerfile
     ports:
-      - "5054:5054"
+      - "5054:5050"
     depends_on:
       - mongo
     networks:
-      - ticketing-net
+      - ticketing-network
 
-  gateway-service:
+  nginx-gateway:
     build:
-      context: ./gateway-service
+      context: ./nginx-gateway
+      dockerfile: Dockerfile
+    container_name: nginx-gateway
     ports:
-      - "5053:5053"
+      - "5050:80"
     depends_on:
       - event-service
       - user-service
@@ -89,7 +95,7 @@ services:
       - payment-service
       - notification-service
     networks:
-      - ticketing-net
+      - ticketing-network
 
 volumes:
   mongo_data:
@@ -97,3 +103,4 @@ volumes:
 networks:
   ticketing-network:
     driver: bridge
+    name: ticketing-network

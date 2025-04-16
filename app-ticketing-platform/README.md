@@ -75,3 +75,22 @@ Invoke different services through REST with JSON
 Easily start your REST Web Services
 
 [Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+
+
+---
+
+### 2. **LICENSE** (Licencia)
+
+Si planeas compartir el código, es importante añadir un archivo de licencia para que otros sepan bajo qué condiciones pueden usar tu código. Un ejemplo de licencia común es la **MIT License**. Aquí tienes un ejemplo de cómo debería ser:
+
+```txt
+MIT License
+
+Copyright (c) 2025 Daniel Camilo
+
+Se otorgan los permisos expresos para utilizar, copiar, modificar, fusionar, publicar, distribuir, sublicenciar y/o vender copias del software, siempre que se cumpla con las siguientes condiciones:
+
+El aviso de copyright y este aviso de permiso deben estar incluidos en todas las copias o partes sustanciales del software.
+
+EL SOFTWARE SE PROPORCIONA "TAL CUAL", SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O IMPLÍCITA, INCLUYENDO PERO NO LIMITADO A LAS GARANTÍAS DE COMERCIABILIDAD, IDONEIDAD PARA UN PROPÓSITO PARTICULAR Y NO INFRACCIÓN. EN NINGÚN CASO EL AUTOR O LOS TITULARES DEL DERECHO DE AUTOR SERÁN RESPONSABLES DE NINGÚN RECLAMO, DAÑO O CUALQUIER OTRA RESPONSABILIDAD, YA SEA EN UNA ACCIÓN DE CONTRATO, AGRAVIO O DE OTRA FORMA, QUE SURJA DE O EN CONEXIÓN CON EL SOFTWARE O EL USO U OTRO TIPO DE ACCIONES EN EL SOFTWARE.
+
