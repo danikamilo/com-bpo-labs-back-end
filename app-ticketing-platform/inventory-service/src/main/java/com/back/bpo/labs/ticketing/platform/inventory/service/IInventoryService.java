@@ -33,6 +33,6 @@ public interface IInventoryService {
      * @param quantity
      * @return
      */
-    public boolean reserveTicket(String eventId, int quantity);
+    public Inventory reserveTicket(String eventId, int quantity);
 
 }

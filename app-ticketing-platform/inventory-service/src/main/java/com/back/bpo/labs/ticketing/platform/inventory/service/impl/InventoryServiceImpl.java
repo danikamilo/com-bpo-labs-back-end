@@ -4,10 +4,13 @@ import com.back.bpo.labs.ticketing.platform.inventory.model.Inventory;
 import com.back.bpo.labs.ticketing.platform.inventory.repository.InventoryRepository;
 import com.back.bpo.labs.ticketing.platform.inventory.service.IInventoryService;
 import com.back.bpo.labs.ticketing.platform.libs.exceptions.ExceptionUtil;
+import com.back.bpo.labs.ticketing.platform.libs.exceptions.NoContentException;
+import com.back.bpo.labs.ticketing.platform.libs.exceptions.TicketsNotAvailableException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Daniel Camilo
@@ -40,16 +43,18 @@ public class InventoryServiceImpl implements IInventoryService {
         }
     }
 
-    public boolean reserveTicket(String eventId, int quantity) {
+    public Inventory reserveTicket(String eventId, int quantity) {
         try {
-            Inventory inv = findByEvent(eventId);
-            if (inv != null && inv.availableTickets >= quantity) {
-                inv.availableTickets -= quantity;
-                return true;
-            }
-            return false;
+            Inventory inv = Optional.ofNullable(findByEvent(eventId)).orElseThrow(() -> new NoContentException("La consulta a las base de datos no devolvio datos."));
+            if (inv.getAvailableTickets() < quantity)
+                throw new TicketsNotAvailableException("No hay suficientes tickets disponibles para este evento.");
+
+            inv.setAvailableTickets(inv.getAvailableTickets() - quantity);
+            inv.update();
+            return inv;
         } catch (Exception e) {
             throw ExceptionUtil.handlePersistenceException(e);
         }
     }
+
 }

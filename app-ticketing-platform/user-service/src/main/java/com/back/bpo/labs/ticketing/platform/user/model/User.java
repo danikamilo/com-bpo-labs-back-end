@@ -8,6 +8,8 @@ import org.bson.codecs.pojo.annotations.BsonProperty;
  */
 public class User extends PanacheMongoEntity {
 
+    @BsonProperty("userId")
+    public String userId;
     @BsonProperty("id")
     public Long id;
     @BsonProperty("name")

@@ -39,7 +39,8 @@ public class InventoryResource {
 
     @POST
     @Path("/reserve/{eventId}/{quantity}")
-    public boolean reserve(@PathParam("eventId") String eventId, @PathParam("quantity") int quantity) {
-        return service.reserveTicket(eventId, quantity);
+    public Response reserve(@PathParam("eventId") String eventId, @PathParam("quantity") int quantity) {
+        return Response.status(Response.Status.OK).entity(service.reserveTicket(eventId, quantity)).build();
+
     }
 }

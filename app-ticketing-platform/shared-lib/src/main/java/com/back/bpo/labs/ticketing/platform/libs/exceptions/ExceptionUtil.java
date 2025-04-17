@@ -22,8 +22,14 @@ public class ExceptionUtil {
             return new ErrorMongoEscrituraException("Error al escribir en MongoDB: " + e.getMessage(), e);
         } else if (e instanceof MongoTimeoutException) {
             return new ErrorMongoTimeoutException("MongoDB no está disponible o tiempo de espera agotado.", e);
-        } else {
+        }else if (e instanceof NoContentException){
+            return new NoContentException("La consulta a las base de datos no devolvio datos.");
+        }else if (e instanceof TicketsNotAvailableException) {
+            return new TicketsNotAvailableException("No hay suficientes tickets disponibles: ");
+        }else {
             return new ErrorPersistenciaGenericaException("Error inesperado al persistir: " + e.getMessage(), e);
         }
     }
+
+
 }
