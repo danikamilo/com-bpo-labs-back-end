@@ -6,13 +6,15 @@ import com.back.bpo.labs.ticketing.platform.notification.service.INotificationSe
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+
 import java.util.List;
 
 
 /**
  * @author Daniel Camilo
  */
-@Path("/api/notifications")
+@Path("/notifications")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class NotificationResource {
@@ -26,7 +28,8 @@ public class NotificationResource {
     }
 
     @POST
-    public void notify(Notification notification) {
-        service.send(notification);
+    public Response notify(Notification notification) {
+        return Response.status(Response.Status.CREATED).entity( service.send(notification)).build();
     }
+
 }

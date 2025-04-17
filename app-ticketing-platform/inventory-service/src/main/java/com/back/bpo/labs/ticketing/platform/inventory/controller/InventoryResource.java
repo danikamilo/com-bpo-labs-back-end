@@ -5,13 +5,15 @@ import com.back.bpo.labs.ticketing.platform.inventory.service.IInventoryService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+
 import java.util.List;
 
 
 /**
  * @author Daniel Camilo
  */
-@Path("/api/inventory")
+@Path("/inventory")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class InventoryResource {
@@ -31,8 +33,8 @@ public class InventoryResource {
     }
 
     @POST
-    public void add(Inventory inventory) {
-        service.addInventory(inventory);
+    public Response add(Inventory inventory) {
+        return Response.status(Response.Status.CREATED).entity(service.addInventory(inventory)).build();
     }
 
     @POST

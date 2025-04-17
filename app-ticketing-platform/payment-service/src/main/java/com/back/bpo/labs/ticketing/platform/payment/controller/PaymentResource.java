@@ -5,13 +5,14 @@ import com.back.bpo.labs.ticketing.platform.payment.service.IPaymentService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.util.List;
 
 
 /**
  * @author Daniel Camilo
  */
-@Path("/api/payments")
+@Path("/payments")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class PaymentResource {
@@ -25,8 +26,8 @@ public class PaymentResource {
     }
 
     @POST
-    public void pay(Payment payment) {
-        paymentService.process(payment);
+    public Response pay(Payment payment) {
+        return Response.status(Response.Status.CREATED).entity(paymentService.process(payment)).build();
     }
 
     @GET

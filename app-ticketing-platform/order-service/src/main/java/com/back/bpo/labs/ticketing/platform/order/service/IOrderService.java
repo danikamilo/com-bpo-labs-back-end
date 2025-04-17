@@ -1,4 +1,4 @@
-package com.back.bpo.labs.ticketing.platform.order.service.impl;
+package com.back.bpo.labs.ticketing.platform.order.service;
 
 
 import com.back.bpo.labs.ticketing.platform.order.model.Order;
@@ -18,10 +18,10 @@ public interface IOrderService {
     public List<Order> listAll();
 
     /**
-     *
      * @param order
+     * @return
      */
-    public void create(Order order);
+    public Order create(Order order);
 
     /**
      *

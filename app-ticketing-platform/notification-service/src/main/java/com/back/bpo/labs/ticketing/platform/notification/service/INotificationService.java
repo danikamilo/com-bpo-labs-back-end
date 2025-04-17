@@ -16,8 +16,8 @@ public interface INotificationService {
     public List<Notification> listAll();
 
     /**
-     *
      * @param notification
+     * @return
      */
-    public void send(Notification notification);
+    public Notification send(Notification notification);
 }

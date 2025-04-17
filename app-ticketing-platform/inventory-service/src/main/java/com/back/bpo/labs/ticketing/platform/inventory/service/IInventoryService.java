@@ -1,7 +1,6 @@
 package com.back.bpo.labs.ticketing.platform.inventory.service;
 
 import com.back.bpo.labs.ticketing.platform.inventory.model.Inventory;
-
 import java.util.List;
 
 /**
@@ -26,7 +25,7 @@ public interface IInventoryService {
      *
      * @param inventory
      */
-    public void addInventory(Inventory inventory);
+    public Inventory addInventory(Inventory inventory);
 
     /**
      *

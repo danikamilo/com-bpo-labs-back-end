@@ -1,5 +1,6 @@
 package com.back.bpo.labs.ticketing.platform.payment.service.impl;
 
+import com.back.bpo.labs.ticketing.platform.libs.exceptions.ExceptionUtil;
 import com.back.bpo.labs.ticketing.platform.payment.model.Payment;
 import com.back.bpo.labs.ticketing.platform.payment.repository.PaymentRepository;
 import com.back.bpo.labs.ticketing.platform.payment.service.IPaymentService;
@@ -21,12 +22,21 @@ public class PaymentServiceImpl implements IPaymentService {
         return repository.listAll();
     }
 
-    public void process(Payment payment) {
-        payment.status = "PAID";
-        repository.persist(payment);
+    public Payment process(Payment payment) {
+        try {
+            payment.status = "PAID";
+            repository.persist(payment);
+            return payment;
+        } catch (Exception e) {
+            throw ExceptionUtil.handlePersistenceException(e);
+        }
     }
 
     public Payment findById(String id) {
-        return repository.findById(new org.bson.types.ObjectId(id));
+        try {
+            return repository.findById(new org.bson.types.ObjectId(id));
+        } catch (Exception e) {
+            throw ExceptionUtil.handlePersistenceException(e);
+        }
     }
 }

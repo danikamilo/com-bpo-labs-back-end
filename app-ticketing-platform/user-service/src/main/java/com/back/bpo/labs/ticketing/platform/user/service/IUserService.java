@@ -20,7 +20,7 @@ public interface IUserService {
      *
      * @param user
      */
-    public void createUser(User user);
+    public User createUser(User user);
 
     /**
      *

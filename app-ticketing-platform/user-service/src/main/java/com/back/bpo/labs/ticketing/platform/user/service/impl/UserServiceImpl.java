@@ -1,5 +1,6 @@
 package com.back.bpo.labs.ticketing.platform.user.service.impl;
 
+import com.back.bpo.labs.ticketing.platform.libs.exceptions.ExceptionUtil;
 import com.back.bpo.labs.ticketing.platform.user.model.User;
 import com.back.bpo.labs.ticketing.platform.user.repository.UserRepository;
 import com.back.bpo.labs.ticketing.platform.user.service.IUserService;
@@ -22,11 +23,20 @@ public class UserServiceImpl implements IUserService {
         return userRepository.listAll();
     }
 
-    public void createUser(User user) {
-        userRepository.persist(user);
+    public User createUser(User user) {
+        try {
+            userRepository.persist(user);
+            return user;
+        } catch (Exception e) {
+            throw ExceptionUtil.handlePersistenceException(e);
+        }
     }
 
     public User findById(String id) {
-        return userRepository.findById(new org.bson.types.ObjectId(id));
+        try {
+            return userRepository.findById(new org.bson.types.ObjectId(id));
+        } catch (Exception e) {
+            throw ExceptionUtil.handlePersistenceException(e);
+        }
     }
 }

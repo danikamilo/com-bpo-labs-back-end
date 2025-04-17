@@ -6,13 +6,14 @@ import com.back.bpo.labs.ticketing.platform.user.service.IUserService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import java.util.List;
 
 /**
  * @author Daniel Camilo
  */
-@Path("/api/users")
+@Path("/users")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class UserResource {
@@ -26,8 +27,8 @@ public class UserResource {
     }
 
     @POST
-    public void createUser(User user) {
-        userService.createUser(user);
+    public Response createUser(User user) {
+        return Response.status(Response.Status.CREATED).entity(userService.createUser(user)).build();
     }
 
     @GET

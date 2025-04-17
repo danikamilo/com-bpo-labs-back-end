@@ -19,7 +19,7 @@ public interface IPaymentService {
      *
      * @param payment
      */
-    public void process(Payment payment) ;
+    public Payment process(Payment payment) ;
 
     /**
      *

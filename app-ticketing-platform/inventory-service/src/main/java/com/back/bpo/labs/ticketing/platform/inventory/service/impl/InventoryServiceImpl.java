@@ -23,24 +23,33 @@ public class InventoryServiceImpl implements IInventoryService {
     }
 
     public Inventory findByEvent(String eventId) {
-        return repository.find("eventId", eventId).firstResult();
+        try {
+            return repository.find("eventId", eventId).firstResult();
+        } catch (Exception e) {
+            throw ExceptionUtil.handlePersistenceException(e);
+        }
+
     }
 
-    public void addInventory(Inventory inventory) {
+    public Inventory addInventory(Inventory inventory) {
         try {
             repository.persist(inventory);
+            return inventory;
         } catch (Exception e) {
             throw ExceptionUtil.handlePersistenceException(e);
         }
     }
 
     public boolean reserveTicket(String eventId, int quantity) {
-        Inventory inv = findByEvent(eventId);
-        if (inv != null && inv.availableTickets >= quantity) {
-            inv.availableTickets -= quantity;
-            repository.update(inv);
-            return true;
+        try {
+            Inventory inv = findByEvent(eventId);
+            if (inv != null && inv.availableTickets >= quantity) {
+                inv.availableTickets -= quantity;
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            throw ExceptionUtil.handlePersistenceException(e);
         }
-        return false;
     }
 }

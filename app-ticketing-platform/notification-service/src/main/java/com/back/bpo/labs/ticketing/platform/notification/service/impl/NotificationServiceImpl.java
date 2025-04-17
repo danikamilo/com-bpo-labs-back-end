@@ -22,9 +22,10 @@ public class NotificationServiceImpl implements INotificationService {
         return notificationRepository.listAll();
     }
 
-    public void send(Notification notification) {
+    public Notification send(Notification notification) {
         try {
             notificationRepository.persist(notification);
+            return notification;
         } catch (Exception e) {
             throw ExceptionUtil.handlePersistenceException(e);
         }
