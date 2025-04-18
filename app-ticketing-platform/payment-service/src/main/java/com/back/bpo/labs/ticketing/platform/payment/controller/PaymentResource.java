@@ -2,6 +2,7 @@ package com.back.bpo.labs.ticketing.platform.payment.controller;
 
 import com.back.bpo.labs.ticketing.platform.payment.model.Payment;
 import com.back.bpo.labs.ticketing.platform.payment.service.IPaymentService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -26,7 +27,7 @@ public class PaymentResource {
     }
 
     @POST
-    public Response pay(Payment payment) {
+    public Response pay(Payment payment) throws JsonProcessingException {
         return Response.status(Response.Status.CREATED).entity(paymentService.process(payment)).build();
     }
 

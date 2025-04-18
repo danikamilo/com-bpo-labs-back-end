@@ -1,6 +1,7 @@
 package com.back.bpo.labs.ticketing.platform.payment.service;
 
 import com.back.bpo.labs.ticketing.platform.payment.model.Payment;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public interface IPaymentService {
      *
      * @param payment
      */
-    public Payment process(Payment payment) ;
+    public Payment process(Payment payment) throws JsonProcessingException;
 
     /**
      *

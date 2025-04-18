@@ -1,6 +1,8 @@
 package com.back.bpo.labs.ticketing.platform.notification.service.impl;
 
 import com.back.bpo.labs.ticketing.platform.libs.exceptions.ExceptionUtil;
+import com.back.bpo.labs.ticketing.platform.libs.kafka.producer.OrderEventProducer;
+import com.back.bpo.labs.ticketing.platform.libs.kafka.producer.PaymentEventProducer;
 import com.back.bpo.labs.ticketing.platform.notification.model.Notification;
 import com.back.bpo.labs.ticketing.platform.notification.repository.NotificationRepository;
 import com.back.bpo.labs.ticketing.platform.notification.service.INotificationService;

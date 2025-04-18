@@ -3,9 +3,14 @@ package com.back.bpo.labs.ticketing.platform.inventory.service.impl;
 import com.back.bpo.labs.ticketing.platform.inventory.model.Inventory;
 import com.back.bpo.labs.ticketing.platform.inventory.repository.InventoryRepository;
 import com.back.bpo.labs.ticketing.platform.inventory.service.IInventoryService;
+import com.back.bpo.labs.ticketing.platform.libs.enums.Status;
 import com.back.bpo.labs.ticketing.platform.libs.exceptions.ExceptionUtil;
 import com.back.bpo.labs.ticketing.platform.libs.exceptions.NoContentException;
 import com.back.bpo.labs.ticketing.platform.libs.exceptions.TicketsNotAvailableException;
+import com.back.bpo.labs.ticketing.platform.libs.kafka.dto.OrderEventDTO;
+import com.back.bpo.labs.ticketing.platform.libs.kafka.producer.OrderEventProducer;
+import com.back.bpo.labs.ticketing.platform.libs.utils.KafkaEventMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -20,6 +25,9 @@ public class InventoryServiceImpl implements IInventoryService {
 
     @Inject
     private InventoryRepository repository;
+
+    @Inject
+    private OrderEventProducer eventProducer;
 
     public List<Inventory> listAll() {
         return repository.listAll();
@@ -37,6 +45,7 @@ public class InventoryServiceImpl implements IInventoryService {
     public Inventory addInventory(Inventory inventory) {
         try {
             repository.persist(inventory);
+            sendOrderMessage(inventory, Status.CREATED.getValue());
             return inventory;
         } catch (Exception e) {
             throw ExceptionUtil.handlePersistenceException(e);
@@ -51,10 +60,19 @@ public class InventoryServiceImpl implements IInventoryService {
 
             inv.setAvailableTickets(inv.getAvailableTickets() - quantity);
             inv.update();
+            sendOrderMessage(inv, Status.INVENTORY_UPDATED.getValue());
             return inv;
         } catch (Exception e) {
             throw ExceptionUtil.handlePersistenceException(e);
         }
+    }
+
+    public void sendOrderMessage(Inventory event, String message) throws JsonProcessingException {
+        OrderEventDTO dto = new OrderEventDTO();
+        dto.setOrderId(event.getEventId());
+        dto.setEventType(message);
+        dto.setPayload(KafkaEventMapper.toJson(event));
+        eventProducer.sendOrderEvent(dto);
     }
 
 }
