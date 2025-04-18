@@ -49,7 +49,7 @@ public class OrderServiceImpl implements IOrderService {
 
     public void sendOrderMessage(Order order, String message) throws JsonProcessingException {
         OrderEventDTO dto = new OrderEventDTO();
-        dto.setOrderId(order.getUserId());
+        dto.setOrderId(order.getOrderId());
         dto.setEventType(message);
         dto.setPayload(KafkaEventMapper.toJson(order));
         eventProducer.sendOrderEvent(dto);

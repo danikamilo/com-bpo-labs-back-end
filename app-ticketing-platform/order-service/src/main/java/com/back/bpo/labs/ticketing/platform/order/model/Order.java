@@ -1,17 +1,19 @@
 package com.back.bpo.labs.ticketing.platform.order.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * @author Daniel Camilo
  */
 public class Order extends PanacheMongoEntity {
 
-    @BsonProperty("userId")
-    public String userId;
+    @BsonProperty("orderId")
+    public String orderId;
 
     @BsonProperty("eventId")
     public String eventId;
@@ -20,17 +22,18 @@ public class Order extends PanacheMongoEntity {
     public int quantity;
 
     @BsonProperty("orderDate")
-    public LocalDateTime orderDate = LocalDateTime.now();
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
+    private Date orderDate = new Date();
 
     @BsonProperty("status")
     public String status = "CREATED";
 
-    public String getUserId() {
-        return userId;
+    public String getOrderId() {
+        return orderId;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
     }
 
     public String getEventId() {
@@ -49,11 +52,11 @@ public class Order extends PanacheMongoEntity {
         this.quantity = quantity;
     }
 
-    public LocalDateTime getOrderDate() {
+    public Date getOrderDate() {
         return orderDate;
     }
 
-    public void setOrderDate(LocalDateTime orderDate) {
+    public void setOrderDate(Date orderDate) {
         this.orderDate = orderDate;
     }
 

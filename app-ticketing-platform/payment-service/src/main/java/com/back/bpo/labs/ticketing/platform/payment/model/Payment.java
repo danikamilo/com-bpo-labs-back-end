@@ -10,6 +10,9 @@ import java.time.LocalDateTime;
  */
 public class Payment extends PanacheMongoEntity {
 
+    @BsonProperty("paymentId")
+    public String paymentId;
+
     @BsonProperty("orderId")
     public String orderId;
 

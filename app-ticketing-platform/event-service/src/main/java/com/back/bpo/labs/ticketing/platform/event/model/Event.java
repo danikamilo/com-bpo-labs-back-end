@@ -11,7 +11,8 @@ import java.util.Date;
  */
 public class Event extends PanacheMongoEntity {
 
-
+    @BsonProperty("eventId")
+    public String eventId;
     @BsonProperty("id")
     public Long id;
     @BsonProperty("name")
