@@ -1,19 +1,36 @@
 package com.back.bpo.labs.ticketing.platform.libs.kafka.dto;
 
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import java.util.Date;
 
 /**
  * @author Daniel Camilo
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonPropertyOrder({"eventType", "recipientEmail", "subject", "message", "referenceId", "date"})
 public class NotificationEventDTO {
 
+    @JsonProperty("eventType")
     private String eventType;
-    private String recipientEmail;
-    private String subject;
-    private String message;
-    private String referenceId;
-    private LocalDateTime timestamp;
 
+    @JsonProperty("recipientEmail")
+    private String recipientEmail;
+
+    @JsonProperty("subject")
+    private String subject;
+
+    @JsonProperty("message")
+    private String message;
+
+    @JsonProperty("referenceId")
+    private String referenceId;
+
+    @JsonProperty("date")
+    private Date date;
+
+    // Getters y setters
     public String getEventType() {
         return eventType;
     }
@@ -54,13 +71,11 @@ public class NotificationEventDTO {
         this.referenceId = referenceId;
     }
 
-    public LocalDateTime getTimestamp() {
-        return timestamp;
+    public Date getDate() {
+        return date;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
+    public void setDate(Date date) {
+        this.date = date;
     }
-
-    // Getters y setters
 }

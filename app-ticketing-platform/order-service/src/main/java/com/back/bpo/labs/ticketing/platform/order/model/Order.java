@@ -3,8 +3,6 @@ package com.back.bpo.labs.ticketing.platform.order.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import org.bson.codecs.pojo.annotations.BsonProperty;
-
-import java.time.LocalDateTime;
 import java.util.Date;
 
 /**

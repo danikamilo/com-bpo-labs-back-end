@@ -1,0 +1,38 @@
+<configuration>
+
+    <!-- Console log configuration -->
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1} - %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- File appender for INFO level logs -->
+    <appender name="FileInfo" class="ch.qos.logback.core.FileAppender">
+        <!-- Logs stored in the same directory as the .jar file -->
+        <file>./logs-info.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1} - %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- File appender for ERROR level logs -->
+    <appender name="FileError" class="ch.qos.logback.core.FileAppender">
+        <!-- Logs stored in the same directory as the .jar file -->
+        <file>./logs-error.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1} - %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Define logging levels and appenders -->
+    <root level="INFO">
+        <appender-ref ref="Console"/>
+        <appender-ref ref="FileInfo"/>
+    </root>
+
+    <logger name="org.jboss" level="ERROR">
+        <appender-ref ref="FileError"/>
+    </logger>
+
+</configuration>

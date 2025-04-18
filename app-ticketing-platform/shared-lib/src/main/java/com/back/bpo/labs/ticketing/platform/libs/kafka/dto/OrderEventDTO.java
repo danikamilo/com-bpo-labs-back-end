@@ -1,18 +1,29 @@
 package com.back.bpo.labs.ticketing.platform.libs.kafka.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
  * @author Daniel Camilo
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonPropertyOrder({"orderId", "eventType", "payload"})
 public class OrderEventDTO {
-    public String orderId;
-    public String eventType;
-    public String payload;
 
-    public OrderEventDTO(){
+    @JsonProperty("orderId")
+    private String orderId;
 
-    }
+    @JsonProperty("eventType")
+    private String eventType;
 
+    @JsonProperty("payload")
+    private String payload;
+
+    // Constructor por defecto
+    public OrderEventDTO() {}
+
+    // Getters y setters
     public String getOrderId() {
         return orderId;
     }
@@ -36,5 +47,4 @@ public class OrderEventDTO {
     public void setPayload(String payload) {
         this.payload = payload;
     }
-
 }

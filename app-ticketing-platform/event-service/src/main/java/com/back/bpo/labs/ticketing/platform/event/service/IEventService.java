@@ -21,5 +21,5 @@ public interface IEventService {
      * @param event
      * @return
      */
-    public Boolean createEvent(Event event);
+    public Event createEvent(Event event);
 }

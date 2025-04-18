@@ -11,48 +11,71 @@ import com.back.bpo.labs.ticketing.platform.order.service.IOrderService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 
-/**
- * @author Daniel Camilo
- */
 @ApplicationScoped
 public class OrderServiceImpl implements IOrderService {
 
-    @Inject
-    private OrderRepository repository;
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceImpl.class);
 
     @Inject
-    private OrderEventProducer eventProducer;
+    OrderRepository repository;
 
+    @Inject
+    OrderEventProducer eventProducer;
+
+    @Override
     public List<Order> listAll() {
-        return repository.listAll();
+        try {
+            List<Order> orders = repository.listAll();
+            LOGGER.info("Fetched {} orders", orders.size());
+            return orders;
+        } catch (Exception e) {
+            LOGGER.error("Error listing orders", e);
+            throw ExceptionUtil.handlePersistenceException(e);
+        }
     }
 
+    @Override
     public Order create(Order order) {
         try {
             repository.persist(order);
+            LOGGER.info("Order created: {}", order);
             sendOrderMessage(order, Status.CREATED.getValue());
             return order;
         } catch (Exception e) {
+            LOGGER.error("Error creating order: {}", order, e);
             throw ExceptionUtil.handlePersistenceException(e);
         }
     }
 
+    @Override
     public Order findById(String id) {
         try {
-            return repository.findById(new org.bson.types.ObjectId(id));
+            Order order = repository.findById(new ObjectId(id));
+            LOGGER.info("Order found: {}", order);
+            return order;
         } catch (Exception e) {
+            LOGGER.error("Error finding order by ID: {}", id, e);
             throw ExceptionUtil.handlePersistenceException(e);
         }
     }
 
-    public void sendOrderMessage(Order order, String message) throws JsonProcessingException {
-        OrderEventDTO dto = new OrderEventDTO();
-        dto.setOrderId(order.getOrderId());
-        dto.setEventType(message);
-        dto.setPayload(KafkaEventMapper.toJson(order));
-        eventProducer.sendOrderEvent(dto);
+    private void sendOrderMessage(Order order, String message) {
+        try {
+            OrderEventDTO dto = new OrderEventDTO();
+            dto.setOrderId(order.getOrderId());
+            dto.setEventType(message);
+            dto.setPayload("");
+            LOGGER.info("Sending Kafka order event: {}", dto);
+            eventProducer.sendOrderEvent(KafkaEventMapper.toJson(order));
+        } catch (JsonProcessingException e) {
+            LOGGER.error("Failed to serialize order for Kafka event", e);
+            throw new RuntimeException("Failed to serialize order", e);
+        }
     }
-
 }

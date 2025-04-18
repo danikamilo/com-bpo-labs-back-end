@@ -1,56 +1,69 @@
 package com.back.bpo.labs.ticketing.platform.libs.kafka.consumer;
 
 import com.back.bpo.labs.ticketing.platform.libs.kafka.dto.NotificationEventDTO;
+import com.back.bpo.labs.ticketing.platform.libs.utils.KafkaEventMapper;
 import io.smallrye.common.annotation.Blocking;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.jboss.logging.Logger;
-import java.util.Properties;
+
 import javax.mail.*;
 import javax.mail.internet.*;
+import java.util.Properties;
 
 /**
- * @author Daniel Camilo
+ * Kafka consumer for notification events, sending email notifications for successful and failed payments.
+ *
+ * @author Daniel
  */
 @ApplicationScoped
 public class NotificationEventConsumer {
 
     private static final Logger LOGGER = Logger.getLogger(NotificationEventConsumer.class);
+
     private static final String SMTP_HOST = "smtp.gmail.com";
     private static final String SMTP_PORT = "587";
-    private static final String SMTP_USER = "hardsoftware.2014@gmail.com";
-    private static final String SMTP_PASS = "tu-contraseña-de-aplicación";
 
-    // Consumidor para el canal "notification-events" (Pagos exitosos)
+    // ⚠️ Reemplazar por una variable segura desde config o secret manager
+    private static final String SMTP_USER = "hardsoftware.2014@gmail.com";
+    private static final String SMTP_PASS = "hnui wuny aaus bcph";
+
     @Incoming("notification-events")
     @Blocking
-    public void consumeSuccessNotification(NotificationEventDTO event) {
+    public void consumeSuccessNotification(String jsonEvent) {
+        NotificationEventDTO event = new NotificationEventDTO();
         try {
-            LOGGER.infof("📩 Notification event received: Type=%s, OrderId=%s", event.getEventType(), event.getReferenceId());
+            event = KafkaEventMapper.toObject(jsonEvent, NotificationEventDTO.class);
+            LOGGER.infof("📩 Notification received [SUCCESS]: Type=%s | OrderId=%s", event.getEventType(), event.getReferenceId());
             sendSuccessNotification(event);
         } catch (Exception e) {
-            LOGGER.errorf("❌ Error processing successful payment notification: %s", e.getMessage());
+            LOGGER.errorf("❌ Error processing success notification for OrderId=%s: %s", event.getReferenceId(), e.getMessage());;
+            LOGGER.debug("Stacktrace:", e);
         }
     }
 
-    // Consumidor para el canal "notification-payment-failed-events" (Pagos fallidos)
     @Incoming("notification-payment-failed-events")
     @Blocking
-    public void consumeFailureNotification(NotificationEventDTO event) {
-        LOGGER.infof("📩 Payment failed notification received: OrderId=%s", event.getReferenceId());
-        sendFailureNotification(event);
+    public void consumeFailureNotification(String jsonEvent) {
+        NotificationEventDTO event = new NotificationEventDTO();
+        try {
+            event = KafkaEventMapper.toObject(jsonEvent, NotificationEventDTO.class);
+            LOGGER.infof("📩 Notification received: ", event);
+            sendFailureNotification(event);
+        } catch (Exception e) {
+            LOGGER.errorf("❌ Error processing failed notification: ", event);
+            LOGGER.debug("Stacktrace:", e);
+        }
     }
 
-    // Enviar notificación de pago exitoso
     private void sendSuccessNotification(NotificationEventDTO event) {
         sendEmail(event.getRecipientEmail(), event.getSubject(), event.getMessage());
-        LOGGER.infof("📧 Payment successful notification sent to %s", event.getRecipientEmail());
+        LOGGER.infof("✅ Payment success email sent to %s", event.getRecipientEmail());
     }
 
-    // Enviar notificación de pago fallido
     private void sendFailureNotification(NotificationEventDTO event) {
         sendEmail(event.getRecipientEmail(), event.getSubject(), event.getMessage());
-        LOGGER.infof("📧 Payment failed notification sent to %s", event.getRecipientEmail());
+        LOGGER.infof("✅ Payment failure email sent to %s", event.getRecipientEmail());
     }
 
     private void sendEmail(String recipientEmail, String subject, String message) {
@@ -58,17 +71,18 @@ public class NotificationEventConsumer {
         try {
             MimeMessage mimeMessage = buildMimeMessage(session, recipientEmail, subject, message);
             Transport.send(mimeMessage);
-            LOGGER.infof("📧 Email sent to: %s", recipientEmail);
+            LOGGER.infof("📧 Email successfully sent to: %s", recipientEmail);
         } catch (MessagingException e) {
-            LOGGER.errorf("❌ Error sending email: %s", e.getMessage());
+            LOGGER.errorf("❌ Failed to send email to %s: %s", recipientEmail, e.getMessage());
+            LOGGER.debug("Stacktrace:", e);
         }
     }
 
     private Session createEmailSession() {
         Properties properties = getEmailProperties();
-        return Session.getInstance(properties, new javax.mail.Authenticator() {
-            protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
-                return new javax.mail.PasswordAuthentication(SMTP_USER, SMTP_PASS);
+        return Session.getInstance(properties, new Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(SMTP_USER, SMTP_PASS);
             }
         });
     }

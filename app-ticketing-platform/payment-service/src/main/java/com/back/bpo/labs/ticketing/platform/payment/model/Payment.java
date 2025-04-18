@@ -1,8 +1,10 @@
 package com.back.bpo.labs.ticketing.platform.payment.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 
 /**
@@ -25,8 +27,9 @@ public class Payment extends PanacheMongoEntity {
     @BsonProperty("status")
     public String status = "PENDING";
 
-    @BsonProperty("timestamp")
-    public LocalDateTime timestamp = LocalDateTime.now();
+    @BsonProperty("orderDate")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
+    private Date date = new Date();
 
     public String getOrderId() {
         return orderId;
@@ -60,11 +63,11 @@ public class Payment extends PanacheMongoEntity {
         this.status = status;
     }
 
-    public LocalDateTime getTimestamp() {
-        return timestamp;
+    public Date getDate() {
+        return date;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
+    public void setDate(Date date) {
+        this.date = date;
     }
 }
