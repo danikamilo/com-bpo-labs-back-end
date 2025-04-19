@@ -13,6 +13,7 @@ import com.back.bpo.labs.ticketing.platform.payment.service.IPaymentService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Date;
@@ -31,6 +32,9 @@ public class PaymentServiceImpl implements IPaymentService {
 
     @Inject
     private NotificationEventProducer notificationEventProducer;
+
+    @ConfigProperty(name = "com.back.bpo.labs.ticketing.platform.payment.destination.email")
+    private String destinationEmail;
 
     @Override
     public List<Payment> listAll() {
@@ -58,7 +62,7 @@ public class PaymentServiceImpl implements IPaymentService {
             LOGGER.error("Error processing payment, sending failed event...", e);
             payment.setStatus(Status.PAYMENT_FAILED.getValue());
             // Send failed payment event
-            sendPaymentMessage(payment, Status.PAYMENT_FAILED.getValue());
+            sendPaymentFailedMessage(payment, Status.PAYMENT_FAILED.getValue());
             throw ExceptionUtil.handlePersistenceException(e);
         }
     }
@@ -74,38 +78,44 @@ public class PaymentServiceImpl implements IPaymentService {
             throw ExceptionUtil.handlePersistenceException(e);
         }
     }
-
+    
     private void sendPaymentMessage(Payment payment, String statusMessage) throws JsonProcessingException {
         try {
-            // Build Payment Event DTO
-            PaymentEventDTO paymentEventDTO = buildPaymentEventDTO(payment, statusMessage);
-            String paymentMessage = KafkaEventMapper.toJson(paymentEventDTO);
-            paymentEventProducer.sendPaymentEvent(paymentMessage);
-
-            // Send Notification Message
-            NotificationEventDTO notificationEventDTO = toNotificationDTO(payment, "danikamilo777@gmail.com");
-            String notificationMessage = KafkaEventMapper.toJson(notificationEventDTO);
-            notificationEventProducer.sendNotificationPayment(notificationMessage);
-
-            LOGGER.info("Payment event sent successfully to Kafka");
+            sendPaymentEvent(payment, statusMessage);
+            sendNotificationEvent(payment, true);
+            LOGGER.info("✅ Payment event sent successfully to Kafka");
         } catch (Exception e) {
-            LOGGER.error("Error sending payment message to Kafka", e);
+            LOGGER.error("❌ Error sending payment message to Kafka", e);
         }
     }
 
     private void sendPaymentFailedMessage(Payment payment, String statusMessage) throws JsonProcessingException {
         try {
-            // Build Payment Event DTO for failed payment
-            PaymentEventDTO paymentEventDTO = buildPaymentEventDTO(payment, statusMessage);
-            paymentEventProducer.sendPaymentEventFailed(KafkaEventMapper.toJson(paymentEventDTO));
-
-            // Send Notification for failed payment
-            NotificationEventDTO notificationEventDTO = toNotificationDTO(payment, "danikamilo777@gmail.com");
-            notificationEventProducer.sendNotificationPaymentFailed(KafkaEventMapper.toJson(notificationEventDTO));
-
-            LOGGER.info("Payment failed event sent successfully to Kafka");
+            sendPaymentEventFailed(payment, statusMessage);
+            sendNotificationEvent(payment, false);
+            LOGGER.info("✅ Payment failed event sent successfully to Kafka");
         } catch (Exception e) {
-            LOGGER.error("Error sending failed payment message to Kafka", e);
+            LOGGER.error("❌ Error sending failed payment message to Kafka", e);
+        }
+    }
+
+    private void sendPaymentEvent(Payment payment, String statusMessage) throws JsonProcessingException {
+        PaymentEventDTO dto = buildPaymentEventDTO(payment, statusMessage);
+        paymentEventProducer.sendPaymentEvent(KafkaEventMapper.toJson(dto));
+    }
+
+    private void sendPaymentEventFailed(Payment payment, String statusMessage) throws JsonProcessingException {
+        PaymentEventDTO dto = buildPaymentEventDTO(payment, statusMessage);
+        paymentEventProducer.sendPaymentEventFailed(KafkaEventMapper.toJson(dto));
+    }
+
+    private void sendNotificationEvent(Payment payment, boolean isSuccess) throws JsonProcessingException {
+        NotificationEventDTO dto = toNotificationDTO(payment, destinationEmail);
+        String json = KafkaEventMapper.toJson(dto);
+        if (isSuccess) {
+            notificationEventProducer.sendNotificationPayment(json);
+        } else {
+            notificationEventProducer.sendNotificationPaymentFailed(json);
         }
     }
 
@@ -120,32 +130,72 @@ public class PaymentServiceImpl implements IPaymentService {
     }
 
     private NotificationEventDTO toNotificationDTO(Payment payment, String recipientEmail) {
-        String subject = getSubject(payment);
-        String message = getMessage(payment);
         NotificationEventDTO dto = new NotificationEventDTO();
-        setNotificationDTOFields(dto, payment, recipientEmail, subject, message);
+        setNotificationDTOFields(dto, payment, recipientEmail);
         return dto;
     }
 
-    private String getSubject(Payment payment) {
-        return Status.PAID.getValue().equals(payment.getStatus()) ?
-                "✅ Successful payment" : "❌ Payment failed";
-    }
-
-    private String getMessage(Payment payment) {
-        return Status.PAID.getValue().equals(payment.getStatus()) ?
-                String.format("We have received your payment of %.2f for order %s. Thank you!",
-                        payment.getAmount(), payment.getOrderId()) :
-                String.format("Hello, your payment of %.2f for order %s has failed. Please try again or contact us.",
-                        payment.getAmount(), payment.getOrderId());
-    }
-
-    private void setNotificationDTOFields(NotificationEventDTO dto, Payment payment, String recipientEmail, String subject, String message) {
-        dto.setEventType(payment.getStatus().equals("PAID") ? "PAYMENT_SUCCESS" : "PAYMENT_FAILED");
+    private void setNotificationDTOFields(NotificationEventDTO dto, Payment payment, String recipientEmail) {
+        dto.setEventType("PAID".equals(payment.getStatus()) ? "PAYMENT_SUCCESS" : "PAYMENT_FAILED");
         dto.setRecipientEmail(recipientEmail);
-        dto.setSubject(subject);
-        dto.setMessage(message);
+        dto.setSubject(getSubject(payment));
+        dto.setMessage(getMessage(payment));
         dto.setReferenceId(payment.getOrderId());
         dto.setDate(new Date());
     }
+
+    private String getSubject(Payment payment) {
+        return "PAID".equals(payment.getStatus()) ? "✅ Successful payment" : "❌ Payment failed";
+    }
+
+    private String getMessage(Payment payment) {
+        return wrapHtml(getHeader() + getGreeting() + getBody(payment) + getPaymentInfo(payment)
+                + getContactInfo() + getLegalFooter());
+    }
+
+    private String getHeader() {
+        return "<h2 style='color:#ffffff;background-color:#4CAF50;padding:10px;text-align:center;'>Ticket Master</h2>";
+    }
+
+    private String getGreeting() {
+        return "<p style='font-size:16px;'>Good morning dear user,</p>";
+    }
+
+    private String getBody(Payment payment) {
+        if ("PAID".equals(payment.getStatus())) {
+            return "<p style='font-size:16px;'>We are pleased to inform you that your payment has been successfully processed.</p>"
+                    + String.format("<p>We have received your payment of <strong>%.2f</strong> for order <strong>%s</strong>. Thank you!</p>",
+                    payment.getAmount(), payment.getOrderId());
+        } else {
+            return "<p style='font-size:16px;color:#D32F2F;'>Dear user, we regret to inform you that your payment could not be processed. Please try again or contact our support team.</p>"
+                    + String.format("<p>Your payment of <strong>%.2f</strong> for order <strong>%s</strong> has failed.</p>",
+                    payment.getAmount(), payment.getOrderId());
+        }
+    }
+
+    private String getPaymentInfo(Payment payment) {
+        return String.format("<h3>Payment Details:</h3><ul>"
+                + "<li><strong>Order ID:</strong> %s</li>"
+                + "<li><strong>Amount:</strong> %.2f</li>"
+                + "<li><strong>Status:</strong> %s</li>"
+                + "</ul>", payment.getOrderId(), payment.getAmount(), payment.getStatus());
+    }
+
+    private String getContactInfo() {
+        return "<p>For more information, contact us at: "
+                + "<a href='http://wa.me/573102897038'>WhatsApp</a> | "
+                + "<a href='mailto:danikamilo777@gmail.com'>danikamilo777@gmail.com</a></p>";
+    }
+
+    private String getLegalFooter() {
+        return "<p style='font-size:12px;color:gray;margin-top:20px;'>"
+                + "The preceding email and its attachments contain confidential information... "
+                + "If you are not an intended recipient, please notify the sender and delete all copies."
+                + "</p>";
+    }
+
+    private String wrapHtml(String content) {
+        return "<html><body style='font-family:Arial, sans-serif;'>" + content + "</body></html>";
+    }
+
 }

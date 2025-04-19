@@ -10,8 +10,6 @@ public class User extends PanacheMongoEntity {
 
     @BsonProperty("userId")
     public String userId;
-    @BsonProperty("id")
-    public Long id;
     @BsonProperty("name")
     public String name;
     @BsonProperty("email")

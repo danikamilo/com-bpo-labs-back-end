@@ -1,6 +1,7 @@
 package com.back.bpo.labs.ticketing.platform.libs.kafka.producer;
 
 import com.back.bpo.labs.ticketing.platform.libs.kafka.dto.PaymentEventDTO;
+import com.back.bpo.labs.ticketing.platform.libs.utils.KafkaEventMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Channel;
@@ -49,6 +50,7 @@ public class PaymentEventProducer {
      */
     public void sendPaymentEventFailed(String event) {
         try {
+            // Build Payment Event DTO
             paymentFailedEventEmitter.send(event);
             LOGGER.info("📤 Payment event sent successfully [FAILED]: {}", event);
         } catch (Exception e) {

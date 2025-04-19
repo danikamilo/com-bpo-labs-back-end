@@ -1,6 +1,5 @@
 package com.back.bpo.labs.ticketing.platform.libs.kafka.producer;
 
-import com.back.bpo.labs.ticketing.platform.libs.kafka.dto.NotificationEventDTO;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Channel;

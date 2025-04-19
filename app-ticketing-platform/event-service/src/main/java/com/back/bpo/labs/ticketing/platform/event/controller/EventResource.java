@@ -42,9 +42,9 @@ public class EventResource {
     @POST
     public Response create(Event event) {
         try {
-            eventService.createEvent(event);
+            event = eventService.createEvent(event);
             if (event != null) {
-                return Response.status(Response.Status.CREATED).build(); // Return status created if the event is successfully created
+                return Response.ok(event).build();
             } else {
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity("Event creation failed.") // Return error message if creation fails

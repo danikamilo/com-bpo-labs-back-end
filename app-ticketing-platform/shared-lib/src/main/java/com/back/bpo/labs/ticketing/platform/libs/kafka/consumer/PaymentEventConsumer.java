@@ -1,6 +1,5 @@
 package com.back.bpo.labs.ticketing.platform.libs.kafka.consumer;
 
-import com.back.bpo.labs.ticketing.platform.libs.kafka.dto.NotificationEventDTO;
 import com.back.bpo.labs.ticketing.platform.libs.kafka.dto.PaymentEventDTO;
 import com.back.bpo.labs.ticketing.platform.libs.utils.KafkaEventMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,21 +15,25 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
+/**
+import com.back.bpo.labs.ticketing.platform.libs.kafka.dto.NotificationEventDTO;
+ * @author Daniel Camilo
+ */
 @ApplicationScoped
 public class PaymentEventConsumer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PaymentEventConsumer.class);
 
-
     @Incoming("payment-events")
     @Blocking
     public void consume(String jsonEvent) {
-        PaymentEventDTO event = new PaymentEventDTO();
-        LOGGER.info("📩 Payment event received: ", event);
+        PaymentEventDTO event;
+        LOGGER.info("📩 Payment event received: ", jsonEvent);
         try {
-            handlePaymentPaid(event);
+            event = KafkaEventMapper.toObject(jsonEvent, PaymentEventDTO.class);
+            handlePaymentPaid(event, jsonEvent);
         } catch (Exception e) {
-            LOGGER.error("❌ Error processing payment event: ", event);
+            LOGGER.error("❌ Error processing payment event: ", jsonEvent);
         }
     }
 
@@ -38,20 +41,19 @@ public class PaymentEventConsumer {
     @Blocking
     public void consumeFiled(String jsonEvent) {
         PaymentEventDTO event = new PaymentEventDTO();
-        LOGGER.info("📩 Payment failure event received: ", event);
+        LOGGER.info("📩 Payment failure event received: ", jsonEvent);
         try {
             event = KafkaEventMapper.toObject(jsonEvent, PaymentEventDTO.class);
             handlePaymentFailed(event);
         } catch (Exception e) {
-            LOGGER.error("❌ Error processing failed payment event [OrderId={}]: {}", event.getOrderId(), e.getMessage());
+            LOGGER.error("❌ Error processing failed payment event [OrderId={}]: {}", jsonEvent, e.getMessage());
         }
     }
 
-    private void handlePaymentPaid(PaymentEventDTO event) {
+    private void handlePaymentPaid(PaymentEventDTO event, String jsonEvent) {
         LOGGER.info("✅ Handling payment success: OrderId={}", event.getOrderId());
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get("payments.json"), StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            ObjectMapper objectMapper = new ObjectMapper();
-            writer.write(objectMapper.writeValueAsString(event));
+            writer.write(jsonEvent);
             writer.newLine();
             LOGGER.info("✅ Payment successfully written to file: OrderId={}", event.getOrderId());
         } catch (IOException e) {
